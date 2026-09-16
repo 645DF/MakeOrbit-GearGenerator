@@ -9,8 +9,48 @@ import urllib.request
 import uuid
 
 
+MAKEORBIT_BETA_URL = "https://645df.de/makeorbit-beta"
+
+
 class MakeOrbitError(RuntimeError):
     pass
+
+
+def unavailable_guidance(system_name, german):
+    """Return localized, platform-specific help when direct import is unavailable."""
+    if system_name == "Darwin":
+        if german:
+            message = (
+                "MakeOrbit wurde auf diesem Mac nicht gefunden oder ist nicht erreichbar.\n\n"
+                "Die erzeugten Dateien bleiben lokal gespeichert. Wenn du MakeOrbit ausprobieren "
+                "möchtest, findest du auf 645df.de Informationen zum aktuellen macOS-Betatest.\n\n"
+                "MakeOrbit-Seite jetzt öffnen?"
+            )
+        else:
+            message = (
+                "MakeOrbit was not found on this Mac or could not be reached.\n\n"
+                "The generated files remain saved locally. If you would like to try MakeOrbit, "
+                "645df.de has information about the current macOS beta test.\n\n"
+                "Open the MakeOrbit page now?"
+            )
+        return message, MAKEORBIT_BETA_URL
+
+    if system_name == "Windows":
+        message = (
+            "MakeOrbit wurde auf diesem Windows-PC nicht gefunden oder ist nicht erreichbar.\n\n"
+            "Die erzeugten Dateien bleiben lokal gespeichert. Eine Windows-Version von MakeOrbit ist in Planung."
+            if german else
+            "MakeOrbit was not found on this Windows PC or could not be reached.\n\n"
+            "The generated files remain saved locally. A Windows version of MakeOrbit is planned."
+        )
+        return message, None
+
+    message = (
+        "MakeOrbit wurde nicht gefunden oder ist nicht erreichbar. Die erzeugten Dateien bleiben lokal gespeichert."
+        if german else
+        "MakeOrbit was not found or could not be reached. The generated files remain saved locally."
+    )
+    return message, None
 
 
 def config_candidates(addin_dir):

@@ -47,6 +47,12 @@ Manuell: Den vollständigen Ordner `MakeOrbitGearGenerator` nach `%APPDATA%\Auto
 
 MakeOrbit vor der Übergabe öffnen und dessen Fusion-Integration einmal installieren. Die Übertragung bleibt lokal auf dem Computer und verwendet die von MakeOrbit erzeugte Token-Datei. STEP, STL und 3MF werden ab MakeOrbit 2.9.8 angenommen; DXF wird ab MakeOrbit 2.9.9 direkt gespeichert.
 
+Ist MakeOrbit nicht installiert oder nicht erreichbar, erscheint pro Importversuch nur ein dezenter Hinweis. Unter macOS kann auf Wunsch die Seite `https://645df.de/makeorbit-beta` mit Informationen zum aktuellen Betatest geöffnet werden. Unter Windows informiert das Fenster darüber, dass eine Windows-Version geplant ist. Bereits erzeugte lokale Exportdateien bleiben erhalten.
+
+### Lizenz
+
+Der öffentlich einsehbare Quellcode ist **nicht Open Source**. Eine unveränderte offizielle Version darf privat und nichtkommerziell verwendet werden. Kopieren, Verändern, Weitergeben, Einbauen oder Wiederverwenden in anderen Funktionen oder Apps und jede kommerzielle Nutzung sind ohne vorherige schriftliche Erlaubnis von Michael Jäger / 645DF untersagt. Bezahlte Sonder- oder Nutzungslizenzen können individuell vereinbart werden. Maßgeblich ist die Datei `LICENSE` im GitHub-Repository.
+
 ### Fehlerbehebung
 
 - **Befehl fehlt:** Fusion neu starten und unter Skripte und Zusatzmodule prüfen, ob das Zusatzmodul läuft.
@@ -100,6 +106,12 @@ Manual installation: copy the complete `MakeOrbitGearGenerator` folder to `%APPD
 ### MakeOrbit
 
 Open MakeOrbit and install its Fusion integration once. Transfer stays on the computer and uses MakeOrbit's generated token file. MakeOrbit 2.9.8 accepts STEP, STL, and 3MF; MakeOrbit 2.9.9 or newer also stores DXF directly.
+
+If MakeOrbit is not installed or cannot be reached, the add-in shows only one unobtrusive notice per import attempt. On macOS, the user may open `https://645df.de/makeorbit-beta` for information about the current beta test. On Windows, the dialog explains that a Windows version is planned. Existing local export files are retained.
+
+### License
+
+The publicly visible source code is **not open source**. An unmodified official release may be used privately and non-commercially. Copying, modifying, redistributing, embedding, or reusing the code in another function or app, and any commercial use, are prohibited without prior written permission from Michael Jäger / 645DF. Paid special-purpose or commercial licenses may be negotiated separately. The `LICENSE` file in the GitHub repository contains the binding terms.
 
 ### Troubleshooting
 

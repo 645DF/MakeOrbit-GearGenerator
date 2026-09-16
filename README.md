@@ -36,6 +36,8 @@ The installers copy only this add-in to Fusion's user AddIns directory. They do 
 
 MakeOrbit must be open and its own Fusion integration must have been installed once. The generator reads the sibling bridge configuration and connects only to `127.0.0.1`, `localhost`, or `::1`. STEP, STL, and 3MF work with MakeOrbit 2.9.8; direct DXF storage is supported by MakeOrbit 2.9.9 or newer.
 
+If MakeOrbit is unavailable, the add-in shows one unobtrusive information dialog per import attempt. On macOS, users may choose to open the [MakeOrbit beta page](https://645df.de/makeorbit-beta). On Windows, the dialog explains that a Windows version is planned. Local exports are retained in either case.
+
 ## Development and tests
 
 The calculation module is deliberately independent of Autodesk modules:
@@ -50,6 +52,6 @@ python3 -m unittest discover -s tests -v
 - [Bilingual PDF guide](docs/MakeOrbit_GearGenerator_Anleitung_DE_EN.pdf)
 - [Editable guide source](docs/USER_GUIDE_DE_EN.md)
 
-## License
+## License — source available, not open source
 
-MIT - see [LICENSE](LICENSE).
+Copyright (c) 2026 Michael Jäger / 645DF. Private, non-commercial use of an unmodified official release is permitted. Copying, modifying, redistributing, embedding the code in another function or application, or using it commercially is prohibited without prior written permission. Paid commercial or integration rights may be negotiated separately. See [LICENSE](LICENSE) for the binding terms.

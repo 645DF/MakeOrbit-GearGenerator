@@ -194,7 +194,8 @@ def build_story(st):
     ], st)
     story += [p("5. Export und MakeOrbit", st["h1"]),
               p("Der Generator kann STEP, STL, 3MF und DXF in den gewählten Ordner schreiben. MakeOrbit verwendet eine authentifizierte lokale Verbindung auf 127.0.0.1; CAD-Dateien werden dabei nicht in eine Cloud geladen.", st["body"]),
-              p("MakeOrbit 2.9.8 akzeptiert STEP, STL und 3MF. MakeOrbit 2.9.9 oder neuer speichert auch DXF direkt.", st["note"]), PageBreak()]
+              p("MakeOrbit 2.9.8 akzeptiert STEP, STL und 3MF. MakeOrbit 2.9.9 oder neuer speichert auch DXF direkt.", st["note"]),
+              p("Ist MakeOrbit nicht installiert oder nicht erreichbar, erscheint pro Importversuch ein dezenter Hinweis. Unter macOS kann auf Wunsch <b>https://645df.de/makeorbit-beta</b> mit Informationen zum aktuellen Betatest geöffnet werden. Unter Windows wird auf die geplante Windows-Version hingewiesen. Lokale Exportdateien bleiben erhalten.", st["body"]), PageBreak()]
 
     story += [p("English", st["h1"]), p("1. Overview", st["h2"]),
               p("MakeOrbit GearGenerator creates external involute gears, internal ring gears, and chain sprockets as new extruded Fusion components. Tooth count is the only required input. Every other size can be enabled individually, and missing dimensions are calculated.", st["body"])]
@@ -251,7 +252,8 @@ def build_story(st):
     ], st)
     story += [p("5. Export and MakeOrbit", st["h1"]),
               p("The generator can write STEP, STL, 3MF, and DXF into the selected folder. MakeOrbit uses an authenticated local connection on 127.0.0.1; CAD files are not uploaded to a cloud service.", st["body"]),
-              p("MakeOrbit 2.9.8 accepts STEP, STL, and 3MF. MakeOrbit 2.9.9 or newer also stores DXF directly.", st["note"]), PageBreak()]
+              p("MakeOrbit 2.9.8 accepts STEP, STL, and 3MF. MakeOrbit 2.9.9 or newer also stores DXF directly.", st["note"]),
+              p("If MakeOrbit is not installed or cannot be reached, one unobtrusive notice appears per import attempt. On macOS, the user may open <b>https://645df.de/makeorbit-beta</b> for information about the current beta test. On Windows, the dialog explains that a Windows version is planned. Local export files are retained.", st["body"]), PageBreak()]
 
     story += [p("Troubleshooting / Fehlerbehebung", st["h1"]),
               p("<b>Command missing / Befehl fehlt</b><br/>Restart Fusion and confirm that MakeOrbitGearGenerator is running in Scripts and Add-ins.", st["body"]),
@@ -260,7 +262,10 @@ def build_story(st):
               p("<b>Profile not closed / Profil nicht geschlossen</b><br/>Increase tooth count or avoid extreme combinations of backlash, module, and diameters.", st["body"]),
               p("Official technical references", st["h2"]), source_table(st), Spacer(1, 4 * mm),
               p("Source URLs: help.autodesk.com/cloudhelp/ENU/Fusion-360-API/", st["small"]),
-              p("License", st["h2"]), p("MakeOrbit GearGenerator is published under the MIT License. Autodesk Fusion and MakeOrbit remain separate products; this add-in contains no Autodesk binaries or credentials.", st["body"])]
+              p("License / Lizenz", st["h2"]),
+              p("The public source is <b>not open source</b>. An unmodified official release may be used privately and non-commercially. Copying, modifying, redistributing, embedding, reusing in another function or app, and commercial use are prohibited without prior written permission from Michael Jäger / 645DF. Paid special-purpose or commercial rights may be negotiated separately. The repository's LICENSE file contains the binding terms.", st["body"]),
+              p("Der öffentliche Quellcode ist <b>nicht Open Source</b>. Eine unveränderte offizielle Version darf privat und nichtkommerziell verwendet werden. Kopieren, Verändern, Weitergeben, Einbauen, Wiederverwenden und kommerzielle Nutzung sind ohne vorherige schriftliche Erlaubnis untersagt. Maßgeblich ist die Datei LICENSE.", st["body"]),
+              p("Autodesk Fusion und MakeOrbit bleiben eigenständige Produkte; dieses Zusatzmodul enthält keine Autodesk-Binärdateien oder Zugangsdaten.", st["note"])]
     return story
 
 

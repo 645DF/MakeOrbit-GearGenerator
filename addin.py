@@ -3,8 +3,10 @@
 import json
 import os
 import pathlib
+import platform
 import tempfile
 import traceback
+import webbrowser
 
 import adsk.core
 import adsk.fusion
@@ -12,11 +14,11 @@ import adsk.fusion
 try:
     from .gear_core import GearRequest, GearError, calculate, outline
     from .localization import language_from_fusion, translator
-    from .makeorbit_bridge import send_file, MakeOrbitError
+    from .makeorbit_bridge import send_file, MakeOrbitError, unavailable_guidance
 except ImportError:
     from gear_core import GearRequest, GearError, calculate, outline
     from localization import language_from_fusion, translator
-    from makeorbit_bridge import send_file, MakeOrbitError
+    from makeorbit_bridge import send_file, MakeOrbitError, unavailable_guidance
 
 
 COMMAND_ID = "de_645df_fusion_gear_generator"
@@ -100,6 +102,24 @@ def _summary(result, german):
     if result.roller_seat_radius is not None:
         lines.append(("Rollensitzradius" if german else "Roller seat radius") + ": %.3f mm" % result.roller_seat_radius)
     return "<br>".join(lines)
+
+
+def _show_makeorbit_unavailable(ui, german):
+    message, url = unavailable_guidance(platform.system(), german)
+    if url:
+        answer = ui.messageBox(
+            message, "MakeOrbit",
+            adsk.core.MessageBoxButtonTypes.YesNoButtonType,
+            adsk.core.MessageBoxIconTypes.InformationIconType,
+        )
+        if answer == adsk.core.DialogResults.DialogYes:
+            webbrowser.open(url)
+    else:
+        ui.messageBox(
+            message, "MakeOrbit",
+            adsk.core.MessageBoxButtonTypes.OKButtonType,
+            adsk.core.MessageBoxIconTypes.InformationIconType,
+        )
 
 
 def _set_visibility(inputs):
@@ -284,6 +304,8 @@ def _export(app, inputs, component, body, sketch, result):
     stem = "".join(c if c.isalnum() or c in "-_" else "-" for c in component.name).strip("-") or "MakeOrbit-Gear"
     design = adsk.fusion.Design.cast(app.activeProduct); manager = design.exportManager
     created, notes = [], []
+    makeorbit_notice_shown = False
+    german = language_from_fusion(app)
     for extension in ("step", "stl", "3mf", "dxf"):
         if not inputs.itemById("format_" + extension).value:
             continue
@@ -306,6 +328,9 @@ def _export(app, inputs, component, body, sketch, result):
                 notes.append("MakeOrbit: " + os.path.basename(path))
             except MakeOrbitError as error:
                 notes.append(str(error))
+                if not makeorbit_notice_shown:
+                    _show_makeorbit_unavailable(app.userInterface, german)
+                    makeorbit_notice_shown = True
     if temporary:
         notes.append("Temporary export folder: " + folder)
     return created, notes
