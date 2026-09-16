@@ -1,0 +1,14 @@
+{
+  "autodeskProduct": "Fusion",
+  "type": "addin",
+  "id": "f7ea38b7-5897-4ad8-9d11-645df90ba264",
+  "author": "645DF",
+  "description": {
+    "": "MakeOrbit GearGenerator: parametric involute, internal and chain sprocket generator with MakeOrbit export.",
+    "1031": "MakeOrbit GearGenerator: parametrischer Generator fuer Evolventen-, Innen- und Kettenraeder mit MakeOrbit-Export."
+  },
+  "version": "1.0.0",
+  "runOnStartup": true,
+  "supportedOS": "windows|mac",
+  "editEnabled": true
+}
