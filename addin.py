@@ -32,24 +32,32 @@ _control = None
 _definition = None
 
 
-def _toolclip(input_obj, filename, short, long_text):
+def _localized(german, german_text, english_text):
+    return german_text if german else english_text
+
+
+def _toolclip(input_obj, filename, short, long_text, german=False):
     input_obj.tooltip = short
     input_obj.tooltipDescription = long_text
-    path = os.path.join(TOOLCLIP_DIR, filename)
+    path = os.path.join(TOOLCLIP_DIR, "de" if german else "en", filename)
+    if not os.path.isfile(path):
+        path = os.path.join(TOOLCLIP_DIR, filename)
     if os.path.isfile(path):
         input_obj.toolClipFilename = path
     return input_obj
 
 
-def _length(inputs, input_id, label, expression, clip="diameters.png", tip=""):
+def _length(inputs, input_id, label, expression, clip="diameters.png", tip="", german=False):
     value = inputs.addValueInput(input_id, label, "mm", adsk.core.ValueInput.createByString(expression))
-    return _toolclip(value, clip, label, tip or label)
+    return _toolclip(value, clip, label, tip or label, german)
 
 
-def _optional(group, key, label, expression, clip, tip, enabled=False):
-    toggle = group.addBoolValueInput("use_" + key, "Specify / Vorgeben", True, "", enabled)
-    value = _length(group, key, label, expression, clip, tip)
-    value.isVisible = enabled
+def _optional(group, key, label, value_label, expression, clip, tip, german=False, enabled=False):
+    toggle = group.addBoolValueInput("use_" + key, label, True, "", enabled)
+    _toolclip(toggle, clip, label, tip, german)
+    value = _length(group, key, value_label, expression, clip, tip, german)
+    value.isVisible = True
+    value.isEnabled = enabled
     return toggle, value
 
 
@@ -98,10 +106,36 @@ def _summary(result, german):
               ("Fußkreis", "Root circle"), ("Dicke", "Thickness"))
     values = (result.pitch_diameter, result.outside_diameter, result.root_diameter, result.thickness)
     lines = ["%s: %.3f mm" % (label[0 if german else 1], value) for label, value in zip(labels, values)]
-    lines.insert(0, "Modul / Module: %.4g mm" % result.module)
+    lines.insert(0, ("Modul" if german else "Module") + ": %.4g mm" % result.module)
     if result.roller_seat_radius is not None:
         lines.append(("Rollensitzradius" if german else "Roller seat radius") + ": %.3f mm" % result.roller_seat_radius)
     return "<br>".join(lines)
+
+
+def _error_text(error, german):
+    text = str(error)
+    if not german:
+        return text
+    translations = (
+        ("Conflicting size inputs", "Widersprüchliche Maßvorgaben"),
+        ("Tooth count is required", "Die Zähnezahl ist erforderlich"),
+        ("Pressure angle must be between 5 and 35 degrees", "Der Eingriffswinkel muss zwischen 5 und 35 Grad liegen"),
+        ("Bore radius must be smaller", "Der Innenradius muss kleiner als der Zahnfuß- beziehungsweise Kettenradgrundradius sein"),
+        ("Connector wall thickness leaves no room", "Die Verbinderwand lässt keine nutzbare Kettenradbreite übrig"),
+        ("Outside radius must be larger", "Der Außenradius muss größer als der Zahnfußradius sein"),
+        ("Internal gear outside radius", "Der Außenradius der Innenverzahnung muss Zahnfuß und Ringwand einschließen"),
+        ("Roller seat is too large", "Der Rollensitz ist für die gewählte Zähnezahl zu groß"),
+        ("Tooth geometry is not feasible", "Die Zahngeometrie ist mit diesen Werten nicht möglich"),
+        ("Invalid external radii", "Ungültige Radien der Außenverzahnung"),
+        ("must be positive", "muss größer als null sein"),
+        ("Fusion could not resolve a closed profile", "Fusion konnte kein geschlossenes Profil erkennen"),
+    )
+    for english, german_text in translations:
+        if english in text:
+            if english == "must be positive":
+                return "Der eingegebene Wert " + german_text
+            return german_text
+    return "Bitte Eingaben und Maße prüfen."
 
 
 def _show_makeorbit_unavailable(ui, german):
@@ -126,20 +160,24 @@ def _set_visibility(inputs):
     kind = _selected_kind(inputs)
     for key in ("chain_link_length", "chain_link_width", "roller_diameter", "roller_thickness", "roller_clearance"):
         inputs.itemById(key).isVisible = kind == "sprocket"
-    for key in ("use_connector_wall", "connector_wall"):
-        item = inputs.itemById(key)
-        item.isVisible = kind == "sprocket" and (key.startswith("use_") or inputs.itemById("use_connector_wall").value)
+    inputs.itemById("use_connector_wall").isVisible = kind == "sprocket"
+    inputs.itemById("connector_wall").isVisible = kind == "sprocket"
+    inputs.itemById("connector_wall").isEnabled = inputs.itemById("use_connector_wall").value
     for key in ("pressure_angle", "backlash"):
         inputs.itemById(key).isVisible = kind != "sprocket"
     inputs.itemById("use_bore").isVisible = kind != "internal"
-    inputs.itemById("bore_radius").isVisible = kind != "internal" and inputs.itemById("use_bore").value
+    inputs.itemById("bore_radius").isVisible = kind != "internal"
+    inputs.itemById("bore_radius").isEnabled = inputs.itemById("use_bore").value
     inputs.itemById("use_ring_wall").isVisible = kind == "internal"
-    inputs.itemById("ring_wall").isVisible = kind == "internal" and inputs.itemById("use_ring_wall").value
+    inputs.itemById("ring_wall").isVisible = kind == "internal"
+    inputs.itemById("ring_wall").isEnabled = inputs.itemById("use_ring_wall").value
     for key in ("module", "circular_pitch", "pitch_diameter", "root_diameter"):
         inputs.itemById("use_" + key).isVisible = kind != "sprocket"
-        inputs.itemById(key).isVisible = kind != "sprocket" and inputs.itemById("use_" + key).value
+        inputs.itemById(key).isVisible = kind != "sprocket"
+        inputs.itemById(key).isEnabled = inputs.itemById("use_" + key).value
     for key in ("outside_diameter", "thickness", "tip_radius", "root_radius"):
-        inputs.itemById(key).isVisible = inputs.itemById("use_" + key).value
+        inputs.itemById(key).isVisible = True
+        inputs.itemById(key).isEnabled = inputs.itemById("use_" + key).value
 
 
 def _update_summary(inputs, german):
@@ -147,7 +185,7 @@ def _update_summary(inputs, german):
     try:
         box.formattedText = _summary(calculate(_request(inputs)), german)
     except Exception as error:
-        box.formattedText = "<font color='red'>%s</font>" % str(error)
+        box.formattedText = "<font color='red'>%s</font>" % _error_text(error, german)
 
 
 class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
@@ -164,36 +202,70 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
         basic = inputs.addTabCommandInput("basic_tab", t("basic")).children
         kind = basic.addDropDownCommandInput("gear_type", t("type"), adsk.core.DropDownStyles.TextListDropDownStyle)
         kind.listItems.add(t("external"), True); kind.listItems.add(t("internal"), False); kind.listItems.add(t("sprocket"), False)
-        _toolclip(kind, "types.png", t("type"), "External involute gear, internal ring gear, or chain sprocket.")
+        _toolclip(kind, "types.png", t("type"), _localized(self.german,
+                  "Wähle Außenverzahnung, Innenverzahnung oder Kettenrad. Die Geometrie und die verfügbaren Maße passen sich automatisch an.",
+                  "Choose an external gear, internal ring gear, or chain sprocket. Geometry and available dimensions adapt automatically."), self.german)
         teeth = basic.addIntegerSpinnerCommandInput("teeth", t("teeth"), 6, 400, 1, 20)
-        _toolclip(teeth, "teeth.png", t("teeth"), "The only required sizing input. Missing dimensions use calculated defaults.")
+        _toolclip(teeth, "teeth.png", t("teeth"), _localized(self.german,
+                  "Pflichtangabe. Sie bestimmt die Anzahl der gleichmäßig verteilten Zähne; fehlende Maße werden aus den aktivierten Vorgaben berechnet.",
+                  "Required. Sets the number of equally spaced teeth; missing dimensions are calculated from the enabled inputs."), self.german)
         name = basic.addStringValueInput("component_name", t("name"), "MakeOrbit-Gear")
-        _toolclip(name, "component.png", t("name"), "Name of the new Fusion component and solid body.")
+        _toolclip(name, "component.png", t("name"), _localized(self.german,
+                  "Name des neuen Fusion-Bauteils, des Volumenkörpers und der Profilskizze.",
+                  "Name of the new Fusion component, solid body, and profile sketch."), self.german)
         pressure = basic.addValueInput("pressure_angle", t("pressure"), "deg", adsk.core.ValueInput.createByString("20 deg"))
-        _toolclip(pressure, "pressure.png", t("pressure"), "Standard involute pressure angle; 20 degrees is the common default.")
-        backlash = _length(basic, "backlash", t("backlash"), "0.05 mm", "backlash.png", "Tangential clearance between meshing teeth.")
+        _toolclip(pressure, "pressure.png", t("pressure"), _localized(self.german,
+                  "Winkel zwischen der Eingriffslinie und der Tangente am Teilkreis. 20 Grad ist der übliche Standardwert.",
+                  "Angle between the line of action and the pitch-circle tangent. 20 degrees is the common standard."), self.german)
+        backlash = _length(basic, "backlash", t("backlash"), "0.05 mm", "backlash.png", _localized(self.german,
+                            "Tangentiales Spiel zwischen zwei eingreifenden Zahnflanken.",
+                            "Tangential clearance between two meshing tooth flanks."), self.german)
         bore_toggle = basic.addBoolValueInput("use_bore", t("bore"), True, "", False)
-        bore = _length(basic, "bore_radius", t("bore_radius"), "5 mm", "bore.png", "Leave disabled to create a closed gear without a centre opening.")
-        bore.isVisible = False
+        bore_tip = _localized(self.german,
+                             "Erzeugt ausschließlich eine zentrische Bohrung. Die Zahnkontur und ihre Lage bleiben unverändert. Deaktiviert bleibt das Zahnrad geschlossen.",
+                             "Creates only a concentric bore. Tooth geometry and position remain unchanged. Disabled creates a closed gear.")
+        _toolclip(bore_toggle, "bore.png", t("bore"), bore_tip, self.german)
+        bore = _length(basic, "bore_radius", t("bore_radius"), "5 mm", "bore.png", bore_tip, self.german)
+        bore.isEnabled = False
+        preview = basic.addBoolValueInput("preview_enabled", t("preview"), True, "", True)
+        _toolclip(preview, "component.png", t("preview"), _localized(self.german,
+                  "Zeigt nach jeder gültigen Eingabe eine temporäre 3D-Vorschau. Beim Abbrechen entfernt Fusion die Vorschaugeometrie.",
+                  "Shows a temporary 3D preview after every valid input change. Fusion removes preview geometry when cancelled."), self.german)
 
         dims = inputs.addTabCommandInput("dimensions_tab", t("dimensions")).children
-        _optional(dims, "module", t("module"), "2 mm", "module.png", "Pitch diameter divided by tooth count.")
-        _optional(dims, "circular_pitch", t("circular_pitch"), "6.283185 mm", "pitch.png", "Arc distance from one tooth to the next on the pitch circle.")
-        _optional(dims, "pitch_diameter", t("pitch_diameter"), "40 mm", "diameters.png", "Reference diameter where mating gears roll without slip.")
-        _optional(dims, "outside_diameter", t("outside_diameter"), "44 mm", "diameters.png", "Diameter over the tooth tips; used exactly when specified.")
-        _optional(dims, "root_diameter", t("root_diameter"), "35 mm", "diameters.png", "Diameter at the tooth roots.")
-        _optional(dims, "thickness", t("thickness"), "5 mm", "thickness.png", "Axial extrusion thickness of the solid part.")
-        _optional(dims, "ring_wall", t("ring_wall"), "4 mm", "internal.png", "Material thickness behind the roots of an internal gear.")
-        _optional(dims, "tip_radius", t("tip_radius"), "22 mm", "tip-radius.png", "Radius from the gear centre to the tooth tips, as shown in dimensioned drawings.")
-        _optional(dims, "root_radius", t("root_radius"), "17.5 mm", "root-radius.png", "Radius from the gear centre to the tooth roots, as shown in dimensioned drawings.")
+        optional_specs = (
+            ("module", "2 mm", "module.png", "Teilkreisdurchmesser geteilt durch Zähnezahl: m = d / z.", "Pitch diameter divided by tooth count: m = d / z."),
+            ("circular_pitch", "6.283185 mm", "pitch.png", "Bogenabstand zweier benachbarter Zähne auf dem Teilkreis: p = πm.", "Arc distance between adjacent teeth on the pitch circle: p = πm."),
+            ("pitch_diameter", "40 mm", "diameters.png", "Bezugsdurchmesser, auf dem zwei Zahnräder theoretisch schlupffrei abrollen.", "Reference diameter where two mating gears theoretically roll without slip."),
+            ("outside_diameter", "44 mm", "diameters.png", "Gesamtdurchmesser über die Zahnspitzen; eine aktivierte Vorgabe wird exakt verwendet.", "Overall diameter across tooth tips; an enabled value is used exactly."),
+            ("root_diameter", "35 mm", "diameters.png", "Durchmesser des Kreises durch die tiefsten Punkte zwischen den Zähnen.", "Diameter of the circle through the deepest points between teeth."),
+            ("thickness", "5 mm", "thickness.png", "Axiale Extrusionsdicke des erzeugten Volumenkörpers.", "Axial extrusion thickness of the generated solid body."),
+            ("ring_wall", "4 mm", "internal.png", "Materialstärke außerhalb der Zahnfüße einer Innenverzahnung.", "Material thickness outside the roots of an internal ring gear."),
+            ("tip_radius", "22 mm", "tip-radius.png", "Radius von der Zahnradmitte bis zu den Zahnspitzen.", "Radius from the gear centre to the tooth tips."),
+            ("root_radius", "17.5 mm", "root-radius.png", "Radius von der Zahnradmitte bis zum Zahnfuß.", "Radius from the gear centre to the tooth root."),
+        )
+        for key, expression, clip, de_tip, en_tip in optional_specs:
+            _optional(dims, key, t(key), t("value"), expression, clip,
+                      _localized(self.german, de_tip, en_tip), self.german)
 
         chain = inputs.addTabCommandInput("chain_tab", t("chain")).children
-        _length(chain, "chain_link_length", t("link_length"), "12.7 mm", "chain-pitch.png", "Pin-to-pin distance; this becomes the sprocket pitch.")
-        _length(chain, "chain_link_width", t("link_width"), "3.55 mm", "chain-width.png", "Free internal width available to the sprocket.")
-        _length(chain, "roller_diameter", t("roller_diameter"), "7.75 mm", "roller.png", "Diameter used to calculate the circular seating pocket.")
-        _length(chain, "roller_thickness", t("roller_thickness"), "3.30 mm", "chain-width.png", "Axial roller width used to derive a safe sprocket thickness.")
-        _optional(chain, "connector_wall", t("connector_wall"), "0.25 mm", "connector.png", "Optional clearance/wall allowance subtracted on both sides.")
-        _length(chain, "roller_clearance", t("clearance"), "0.15 mm", "roller.png", "Radial clearance added to the roller radius for a free fit.")
+        _length(chain, "chain_link_length", t("link_length"), "12.7 mm", "chain-pitch.png", _localized(self.german,
+                "Abstand von Rollenmitte zu Rollenmitte; dieser Wert wird zur Kettenradteilung.",
+                "Distance from roller centre to roller centre; this becomes the sprocket pitch."), self.german)
+        _length(chain, "chain_link_width", t("link_width"), "3.55 mm", "chain-width.png", _localized(self.german,
+                "Freie Breite zwischen den inneren Kettenlaschen.", "Free width between the inner chain plates."), self.german)
+        _length(chain, "roller_diameter", t("roller_diameter"), "7.75 mm", "roller.png", _localized(self.german,
+                "Außendurchmesser der Kettenrolle; daraus wird die kreisförmige Rollentasche berechnet.",
+                "Outside diameter of the chain roller; used to calculate the circular seating pocket."), self.german)
+        _length(chain, "roller_thickness", t("roller_thickness"), "3.30 mm", "chain-width.png", _localized(self.german,
+                "Axiale Breite der Kettenrolle; begrenzt die sichere Zahnbreite.",
+                "Axial roller width; limits the safe tooth width."), self.german)
+        _optional(chain, "connector_wall", t("connector_wall"), t("value"), "0.25 mm", "connector.png", _localized(self.german,
+                  "Optionale seitliche Sicherheitszugabe; sie wird auf beiden Seiten von der nutzbaren Breite abgezogen.",
+                  "Optional side allowance; subtracted from the usable width on both sides."), self.german)
+        _length(chain, "roller_clearance", t("clearance"), "0.15 mm", "roller.png", _localized(self.german,
+                "Radiales Zusatzspiel zum Rollenradius, damit die Rolle frei in der Tasche sitzt.",
+                "Radial allowance added to the roller radius so the roller seats freely."), self.german)
 
         export = inputs.addTabCommandInput("export_tab", t("export")).children
         export.addBoolValueInput("save_local", t("save_local"), True, "", False)
@@ -202,12 +274,13 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
         export.addBoolValueInput("send_makeorbit", t("makeorbit"), True, "", False)
         for key in ("step", "stl", "3mf", "dxf"):
             export.addBoolValueInput("format_" + key, t("format_" + key), True, "", key in {"step", "3mf"})
-        export.addTextBoxCommandInput("makeorbit_note", "", "MakeOrbit uses an authenticated local-only bridge. Direct DXF transfer requires MakeOrbit 2.9.9 or newer.", 2, True)
+        export.addTextBoxCommandInput("makeorbit_note", "", t("makeorbit_note"), 2, True)
         inputs.addTextBoxCommandInput("calculated_summary", t("summary"), "", 6, True)
 
         changed = InputChangedHandler(self.german); command.inputChanged.add(changed); _handlers.append(changed)
         validate = ValidateHandler(self.german); command.validateInputs.add(validate); _handlers.append(validate)
         execute = ExecuteHandler(self.german); command.execute.add(execute); _handlers.append(execute)
+        preview_handler = PreviewHandler(); command.executePreview.add(preview_handler); _handlers.append(preview_handler)
         destroy = DestroyHandler(); command.destroy.add(destroy); _handlers.append(destroy)
         _set_visibility(inputs); _update_summary(inputs, self.german)
 
@@ -250,7 +323,26 @@ class ExecuteHandler(adsk.core.CommandEventHandler):
             if notes: detail += "\n\n" + "\n".join(notes)
             ui.messageBox(t("created") + "\n\n" + detail)
         except Exception as error:
-            ui.messageBox(t("error") + ":\n" + str(error) + "\n\n" + traceback.format_exc())
+            try:
+                app.log(traceback.format_exc())
+            except Exception:
+                pass
+            ui.messageBox(t("error") + ":\n" + _error_text(error, self.german))
+
+
+class PreviewHandler(adsk.core.CommandEventHandler):
+    def notify(self, args):
+        inputs = args.command.commandInputs
+        if not inputs.itemById("preview_enabled").value:
+            return
+        try:
+            result = calculate(_request(inputs))
+            _create_solid(adsk.core.Application.get(), result, inputs.itemById("component_name").value)
+            # Export is intentionally excluded from previews, so final execute
+            # must still run when the user confirms the command.
+            args.isValidResult = False
+        except Exception:
+            args.isValidResult = False
 
 
 class DestroyHandler(adsk.core.CommandEventHandler):
@@ -305,7 +397,7 @@ def _export(app, inputs, component, body, sketch, result):
     design = adsk.fusion.Design.cast(app.activeProduct); manager = design.exportManager
     created, notes = [], []
     makeorbit_notice_shown = False
-    german = language_from_fusion(app)
+    german = language_from_fusion(app) == "de"
     for extension in ("step", "stl", "3mf", "dxf"):
         if not inputs.itemById("format_" + extension).value:
             continue
@@ -339,7 +431,7 @@ def _export(app, inputs, component, body, sketch, result):
 def run(context):
     global _definition, _control
     app = adsk.core.Application.get(); ui = app.userInterface
-    german = language_from_fusion(app); t = translator("de" if german else "en")
+    german = language_from_fusion(app) == "de"; t = translator("de" if german else "en")
     _definition = ui.commandDefinitions.itemById(COMMAND_ID)
     if not _definition:
         _definition = ui.commandDefinitions.addButtonDefinition(COMMAND_ID, t("command"), t("description"), RESOURCE_DIR)

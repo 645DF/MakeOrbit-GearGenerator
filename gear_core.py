@@ -146,6 +146,8 @@ def calculate(req: GearRequest) -> GearResult:
                           pitch * (0.6 + 1.0 / math.tan(math.pi / req.teeth)) / 2.0)
         if outside_radius <= root_radius:
             raise GearError("Outside radius must be larger than the roller-seat root radius")
+        if req.bore_radius is not None and req.bore_radius >= root_radius:
+            raise GearError("Bore radius must be smaller than the sprocket root radius")
         return GearResult(
             kind=req.kind, teeth=req.teeth, module=pitch / math.pi,
             circular_pitch=pitch, pitch_radius=pitch_radius,

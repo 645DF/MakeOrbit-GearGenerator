@@ -7,7 +7,7 @@
     "": "MakeOrbit GearGenerator: parametric involute, internal and chain sprocket generator with MakeOrbit export.",
     "1031": "MakeOrbit GearGenerator: parametrischer Generator fuer Evolventen-, Innen- und Kettenraeder mit MakeOrbit-Export."
   },
-  "version": "1.0.0",
+  "version": "1.1.0",
   "runOnStartup": true,
   "supportedOS": "windows|mac",
   "editEnabled": true

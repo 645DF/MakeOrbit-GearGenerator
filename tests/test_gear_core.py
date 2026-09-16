@@ -51,6 +51,16 @@ class GearCalculationTests(unittest.TestCase):
         self.assertIsNone(calculate(GearRequest(teeth=20)).bore_radius)
         with self.assertRaises(GearError):
             calculate(GearRequest(teeth=20, bore_radius=18))
+        with self.assertRaises(GearError):
+            calculate(GearRequest(kind="sprocket", teeth=11, bore_radius=19))
+
+    def test_bore_is_only_a_hole_and_never_moves_teeth(self):
+        for kind, teeth in (("external", 20), ("sprocket", 11)):
+            without_bore = calculate(GearRequest(kind=kind, teeth=teeth))
+            with_bore = calculate(GearRequest(kind=kind, teeth=teeth, bore_radius=5))
+            self.assertEqual(outline(without_bore), outline(with_bore))
+            self.assertEqual(without_bore.pitch_radius, with_bore.pitch_radius)
+            self.assertEqual(without_bore.outside_radius, with_bore.outside_radius)
 
     def test_internal_gear_has_outer_ring(self):
         value = calculate(GearRequest(kind="internal", teeth=42, module=1.5, ring_wall=4))

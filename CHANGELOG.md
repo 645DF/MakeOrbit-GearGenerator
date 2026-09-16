@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0 - 2026-09-16
+
+- Optional dimension labels now appear directly beside their checkboxes; value fields enable immediately without a tab change.
+- Added temporary live 3D preview support.
+- Localized all hover help and MakeOrbit information text according to Fusion's UI language.
+- Replaced compact tool-clips with detailed German and English technical dimension drawings.
+- Explicitly guaranteed and tested that an external-gear or sprocket bore removes centre material only and never shifts teeth inward.
+- Added a sourced 11-tooth, 12-speed bicycle-chain pulley example with reserved bearing space to the bilingual guide.
+
 ## 1.0.0 - 2026-09-16
 
 - Initial public release as **MakeOrbit GearGenerator**.

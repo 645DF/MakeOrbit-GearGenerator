@@ -10,8 +10,12 @@ The interface follows Fusion's language: German when Fusion is set to German, En
 - Internal gearing with a calculated or explicit ring wall
 - Roller-chain sprockets from link pitch, link width, roller diameter, roller thickness, optional connector wall, and clearance
 - Closed gear by default; a centre bore is created only when explicitly enabled
+- Bore radius removes only the concentric centre area and never shifts the tooth geometry inward
 - Exact pitch, outside, and root-radius calculations; rounded radial crowns and roller-seat pockets
 - Extruded solid in a new named Fusion component
+- Optional live 3D preview before final creation
+- Immediately editable optional inputs without switching tabs
+- Separate German and English help text plus detailed technical dimension diagrams
 - Local STEP, STL, 3MF, and DXF export
 - Authenticated loopback transfer to 645DF MakeOrbit using its existing Fusion bridge
 - macOS and Windows installers, plus manual installation instructions
@@ -51,6 +55,10 @@ python3 -m unittest discover -s tests -v
 
 - [Bilingual PDF guide](docs/MakeOrbit_GearGenerator_Anleitung_DE_EN.pdf)
 - [Editable guide source](docs/USER_GUIDE_DE_EN.md)
+
+## Example: 11-tooth 12-speed derailleur pulley
+
+The bilingual guide includes a complete worked example using a 12.70 mm chain pitch, 2.10 mm inside width, 7.75 mm nominal roller diameter, 0.15 mm clearance, and an 11.00 mm bore radius reserved for a later 22 mm bearing seat. The example intentionally uses generic technical dimensions and does not depend on a named drivetrain brand.
 
 ## License — source available, not open source
 

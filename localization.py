@@ -12,9 +12,11 @@ DE = {
     "link_width": "Kettengliedbreite innen", "roller_diameter": "Kettenröllchen-Durchmesser",
     "roller_thickness": "Kettenröllchen-Dicke", "connector_wall": "Wandstärke der Rollenverbinder",
     "clearance": "Rollenspiel", "summary": "Berechnete Werte", "name": "Bauteilname",
+    "value": "Wert", "preview": "Live-Vorschau anzeigen",
     "save_local": "Dateien lokal exportieren", "folder": "Exportordner", "makeorbit": "Direkt an MakeOrbit senden",
     "format_step": "STEP", "format_stl": "STL", "format_3mf": "3MF", "format_dxf": "DXF",
     "created": "Zahnrad wurde erzeugt", "error": "Zahnrad konnte nicht erzeugt werden",
+    "makeorbit_note": "MakeOrbit verwendet eine authentifizierte, ausschließlich lokale Verbindung. Direkte DXF-Übergabe benötigt MakeOrbit 2.9.9 oder neuer.",
 }
 
 EN = {
@@ -29,9 +31,11 @@ EN = {
     "link_width": "Inside chain link width", "roller_diameter": "Chain roller diameter",
     "roller_thickness": "Chain roller thickness", "connector_wall": "Roller connector wall thickness",
     "clearance": "Roller clearance", "summary": "Calculated values", "name": "Component name",
+    "value": "Value", "preview": "Show live preview",
     "save_local": "Export files locally", "folder": "Export folder", "makeorbit": "Send directly to MakeOrbit",
     "format_step": "STEP", "format_stl": "STL", "format_3mf": "3MF", "format_dxf": "DXF",
     "created": "Gear was created", "error": "Gear could not be created",
+    "makeorbit_note": "MakeOrbit uses an authenticated local-only connection. Direct DXF transfer requires MakeOrbit 2.9.9 or newer.",
 }
 
 

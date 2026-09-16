@@ -1,6 +1,6 @@
-# MakeOrbit GearGenerator 1.0.0
+# MakeOrbit GearGenerator 1.1.0
 
-First public release of the 645DF gear generator for Autodesk Fusion.
+Usability, preview, localization, and documentation update for the 645DF gear generator for Autodesk Fusion.
 
 ## Included
 
@@ -15,6 +15,11 @@ First public release of the 645DF gear generator for Autodesk Fusion.
 - macOS and Windows installers
 - Bilingual German/English PDF guide
 - Platform-specific MakeOrbit availability guidance for macOS and Windows
+- Immediate optional-value editing without switching tabs
+- Live 3D preview
+- Fully localized German/English hover help and detailed technical dimension graphics
+- Bore geometry that removes centre material only, covered by regression tests
+- Worked 11-tooth, 12-speed derailleur-pulley example with reserved bearing space
 
 ## License
 
